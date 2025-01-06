@@ -8,11 +8,6 @@ Action intended to be called from delete branch cleanup.
 #### 'branch-name' (required)
 Branch name github.event.ref.
 
-#### 'aws-access-key-id' (required)
-The AWS access key id, should always be for dev.
-
-#### 'aws-secret-access-key' (required)
-The AWS secret access key, should always be for dev.
 
 #### 'namespace'
 Namespace used by the repo and required for helm uninstall command.

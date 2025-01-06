@@ -8,12 +8,6 @@ inputs:
   branch-name:
     description: 'Branch name (github.event.ref)'
     required: true
-  aws-access-key-id:
-    description: 'AWS Access Key ID'
-    required: true
-  aws-secret-access-key:
-    description: 'AWS Secret Access Key'
-    required: true
   namespace:
     description: 'Helm namespace'
     required: false
@@ -122,14 +116,6 @@ runs:
   - name: Code Checkout
     if: inputs.recursive-custom-token == ''
     uses: actions/checkout@v4
-
-  - name: Authenticate with DEV
-    id: authenticate_dev
-    uses: aws-actions/configure-aws-credentials@v4
-    with:
-      aws-access-key-id: ${{ inputs.aws-access-key-id }}
-      aws-secret-access-key: ${{ inputs.aws-secret-access-key }}
-      aws-region: ${{ inputs.aws-region }}
 
   - name: Remove Branched S3 Objects
     if: inputs.ui-repo-name != ''

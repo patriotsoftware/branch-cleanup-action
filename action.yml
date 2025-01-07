@@ -8,12 +8,6 @@ inputs:
   branch-name:
     description: 'Branch name (github.event.ref)'
     required: true
-  aws-access-key-id:
-    description: 'AWS Access Key ID'
-    required: true
-  aws-secret-access-key:
-    description: 'AWS Secret Access Key'
-    required: true
   namespace:
     description: 'Helm namespace'
     required: false
@@ -123,13 +117,14 @@ runs:
     if: inputs.recursive-custom-token == ''
     uses: actions/checkout@v4
 
-  - name: Authenticate with DEV
-    id: authenticate_dev
-    uses: aws-actions/configure-aws-credentials@v4
+  - name: Get Credentials from Amazon Cognito Identity
+    uses: patriotsoftware/cognito-idpool-auth@main
     with:
-      aws-access-key-id: ${{ inputs.aws-access-key-id }}
-      aws-secret-access-key: ${{ inputs.aws-secret-access-key }}
+      cognito-identity-pool-id: "us-east-1:45b20ecf-6975-4a05-97af-543360c1fcaa"
       aws-region: ${{ inputs.aws-region }}
+      audience: "cognito-identity.amazonaws.com"
+      aws-account-id: ${{ inputs.aws-account-id }}
+      set-in-environment: true
 
   - name: Remove Branched S3 Objects
     if: inputs.ui-repo-name != ''
@@ -172,14 +167,15 @@ runs:
         helm uninstall -n ${NAMESPACE} $release_name || exit_code=$?          
       done
     shell: bash
-    
-  - name: Delete CDK Stacks (propercase branch)
-    id: delete_cdk_propercase
+
+  - name: Delete CDK Stacks
+    id: delete_cdk
     if: (inputs.ui-repo-name == '') && (steps.branch-validation.conclusion == 'success')
     env:
       AWS_ACCOUNT_ID: ${{ inputs.aws-account-id }}
       AWS_REGION: ${{ inputs.aws-region }}
       BRANCH_NAME: ${{ steps.extract_branch.outputs.branch }}
+      LOWER_BRANCH_NAME: ${{ steps.extract_branch.outputs.cdk-branch }}
       STACK_NAME: ${{ inputs.stack-name }}    
     continue-on-error: true
     run: |
@@ -190,30 +186,9 @@ runs:
         echo "destroy all stacks"
         cdk destroy --all -f
       else
-        echo "destroy only $STACK_NAME-$BRANCH_NAME"
+        echo "destroy only $STACK_NAME-$BRANCH_NAME or $STACK_NAME-$LOWER_BRANCH_NAME"
         cdk destroy $STACK_NAME-$BRANCH_NAME -e -f
-      fi
-    shell: bash
-
-  - name: Delete CDK Stacks (without underscores branch)
-    id: delete_cdk_lowercase
-    if: (inputs.ui-repo-name == '') && (steps.branch-validation.conclusion == 'success')
-    env:
-      AWS_ACCOUNT_ID: ${{ inputs.aws-account-id }}
-      AWS_REGION: ${{ inputs.aws-region }}
-      BRANCH_NAME: ${{ steps.extract_branch.outputs.cdk-branch }}
-      STACK_NAME: ${{ inputs.stack-name }}    
-    continue-on-error: true
-    run: |
-      echo "Delete CDK Stacks: $BRANCH_NAME"
-      cd ${{ inputs.cdk-folder }}
-      if [[ "${{ inputs.stack-name }}" == "" ]];
-      then
-        echo "destroy all stacks"
-        cdk destroy --all -f
-      else
-        echo "destroy only $STACK_NAME-$BRANCH_NAME"
-        cdk destroy $STACK_NAME-$BRANCH_NAME -e -f
+        cdk destroy $STACK_NAME-$LOWER_BRANCH_NAME -e -f
       fi
     shell: bash
 

@@ -174,8 +174,7 @@ runs:
     env:
       AWS_ACCOUNT_ID: ${{ inputs.aws-account-id }}
       AWS_REGION: ${{ inputs.aws-region }}
-      BRANCH_NAME: ${{ steps.extract_branch.outputs.branch }}
-      LOWER_BRANCH_NAME: ${{ steps.extract_branch.outputs.clean-branch }}
+      BRANCH_NAME: ${{ steps.extract_branch.outputs.clean-branch }} # ${{ steps.extract_branch.outputs.branch }}
       STACK_NAME: ${{ inputs.stack-name }}    
     continue-on-error: true
     run: |
@@ -186,9 +185,8 @@ runs:
         echo "destroy all stacks"
         cdk destroy --all -f
       else
-        echo "destroy only $STACK_NAME-$BRANCH_NAME or $STACK_NAME-$LOWER_BRANCH_NAME"
+        echo "destroy only $STACK_NAME-$BRANCH_NAME"
         cdk destroy $STACK_NAME-$BRANCH_NAME -e -f
-        cdk destroy $STACK_NAME-$LOWER_BRANCH_NAME -e -f
       fi
     shell: bash
 

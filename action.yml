@@ -88,8 +88,8 @@ runs:
      
   - name: Branch Outputs
     run: |
-      echo ${{ steps.extract_branch.outputs.clean-branch }}
-      echo ${{ steps.extract_branch.outputs.branch }}
+      echo "Lower branch name: ${{ steps.extract_branch.outputs.clean-branch }}"
+      echo "Proper branch name: ${{ steps.extract_branch.outputs.branch }}"
     shell: bash
 
   - name: Release names check
@@ -175,7 +175,7 @@ runs:
       AWS_ACCOUNT_ID: ${{ inputs.aws-account-id }}
       AWS_REGION: ${{ inputs.aws-region }}
       BRANCH_NAME: ${{ steps.extract_branch.outputs.branch }}
-      LOWER_BRANCH_NAME: ${{ steps.extract_branch.outputs.cdk-branch }}
+      LOWER_BRANCH_NAME: ${{ steps.extract_branch.outputs.clean-branch }}
       STACK_NAME: ${{ inputs.stack-name }}    
     continue-on-error: true
     run: |

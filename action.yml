@@ -88,8 +88,8 @@ runs:
      
   - name: Branch Outputs
     run: |
-      echo "Lower branch name: ${{ steps.extract_branch.outputs.clean-branch }}"
-      echo "Proper branch name: ${{ steps.extract_branch.outputs.branch }}"
+      echo "Branch name: ${{ steps.extract_branch.outputs.clean-branch }}"
+      echo "Lowercase without underscores: ${{ steps.extract_branch.outputs.branch }}"
     shell: bash
 
   - name: Release names check
@@ -168,8 +168,8 @@ runs:
       done
     shell: bash
 
-  - name: Delete CDK Stacks (propercase branch)
-    id: delete_cdk_propercase
+  - name: Delete CDK Stacks
+    id: delete_cdk
     if: (inputs.ui-repo-name == '') && (steps.branch-validation.conclusion == 'success')
     env:
       AWS_ACCOUNT_ID: ${{ inputs.aws-account-id }}
@@ -190,17 +190,17 @@ runs:
       fi
     shell: bash
 
-  - name: Delete CDK Stacks (lowercase branch)
+  - name: Delete CDK Stacks (lowercase without underscores branch)
     id: delete_cdk_lowercase
     if: (inputs.ui-repo-name == '') && (steps.branch-validation.conclusion == 'success')
     env:
       AWS_ACCOUNT_ID: ${{ inputs.aws-account-id }}
       AWS_REGION: ${{ inputs.aws-region }}
-      BRANCH_NAME: ${{ steps.extract_branch.outputs.clean-branch }}     
+      BRANCH_NAME: ${{ steps.extract_branch.outputs.clean-branch }}
       STACK_NAME: ${{ inputs.stack-name }}    
     continue-on-error: true
     run: |
-      echo "Delete CDK Stacks (lowercase): $BRANCH_NAME"
+      echo "Delete CDK Stacks (lowercase without underscores): $BRANCH_NAME"
       cd ${{ inputs.cdk-folder }}
       if [[ "${{ inputs.stack-name }}" == "" ]];
       then
